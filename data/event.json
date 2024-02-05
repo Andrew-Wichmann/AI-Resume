@@ -1,0 +1,32 @@
+{
+    "body": "[{ \"role\": \"user\", \"content\": \"Hello, what can you tell me about Andrew?\"},{ \"role\": \"system\", \"content\": \"Hello! Thank you for your inquiry about Andrew Wichmann. Andrew is a highly skilled software engineer with 6 years of experience in the field. He holds a Bachelor's degree in Computer Science from the University of Southern Illinois University in Carbondale. Currently located in New York City, Andrew is open to a hybrid work environment, combining remote and in-person work as needed. His target salary is $150,000. Is there anything specific you would like to know about his career accomplishments or any other details\"},{ \"role\": \"user\", \"content\": \"Do you know if Andrew is open to relocation?\"}]",
+    "resource": "/{proxy+}",
+    "requestContext": {
+      "resourceId": "123456",
+      "apiId": "1234567890",
+      "resourcePath": "/{proxy+}",
+      "httpMethod": "POST",
+      "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+      "accountId": "123456789012",
+      "identity": {
+        "apiKey": null,
+        "userArn": null,
+        "cognitoAuthenticationType": null,
+        "caller": null,
+        "userAgent": "Custom User Agent String",
+        "user": null,
+        "cognitoIdentityPoolId": null,
+        "cognitoIdentityId": null,
+        "cognitoAuthenticationProvider": null,
+        "sourceIp": "127.0.0.1",
+        "accountId": null
+      },
+      "stage": "prod"
+    },
+    "httpMethod": "POST",
+    "path": "/resume",
+    "headers": {
+      "Accept": "*/*",
+      "Content-Type": "application/json"
+    }
+  }

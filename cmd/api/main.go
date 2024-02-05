@@ -3,8 +3,12 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"strings"
 
 	chat "github.com/Andrew-Wichmann/AI-Resume/cmd/api/openai"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 	openai "github.com/sashabaranov/go-openai"
 )
 
@@ -30,11 +34,48 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(chatResponse))
 }
 
+func lambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	var messages []openai.ChatCompletionMessage
+	err := json.NewDecoder(strings.NewReader(request.Body)).Decode(&messages)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, nil
+	}
+	chatResponse, err := chat.GetResponse(messages)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, nil
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       chatResponse,
+	}, nil
+}
+
 func main() {
-	http.HandleFunc("/resume", resumeHandler)
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
-	http.ListenAndServe(":8080", nil)
+	println("Starting server")
+	mode, ok := os.LookupEnv("SERVER_MODE")
+	if !ok {
+		panic("SERVER_MODE not set")
+	}
+
+	if mode == "HTTP_SERVER" {
+		http.HandleFunc("/resume", resumeHandler)
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("OK"))
+		})
+		http.ListenAndServe(":8080", nil)
+
+	} else if mode == "LAMBDA" {
+		lambda.Start(lambdaHandler)
+	} else {
+		panic("Invalid SERVER_MODE")
+	}
+
 }

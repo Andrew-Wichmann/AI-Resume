@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: This Lambda function serves an AI agent that answers questions about Andrew Wichmann's Resume
+Resources:
+  MyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: cmd/api/
+      Runtime: go1.x
+      CodeUri: .
+      Environment:
+        Variables:
+          SERVER_MODE: "LAMBDA"
+      Events:
+        AIResume:
+          Type: Api
+          Properties:
+            Path: /resume
+            Method: get
