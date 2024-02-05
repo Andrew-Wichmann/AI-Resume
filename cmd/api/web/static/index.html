@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat Application</title>
+    <style>
+        .center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="center">
+        <input type="text" id="message" placeholder="Type your message here">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            var message = document.getElementById('message').value;
+            console.log('Sending message: ' + message);
+
+            fetch('/resume', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify([{ "role": "user", "content": message }]),
+            })
+                .then(response => response.text())
+                .then(data => console.log(data))
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>

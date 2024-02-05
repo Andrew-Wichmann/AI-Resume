@@ -25,3 +25,13 @@ Resources:
           Properties:
             Path: /resume
             Method: get
+        Home:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
