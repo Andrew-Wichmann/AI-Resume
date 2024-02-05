@@ -1,5 +1,5 @@
 // Package chat provides an abstraction for communicating with OpenAI's API.
-package chat
+package openai
 
 import (
 	"context"
@@ -25,11 +25,20 @@ func GetResponse(chats []openai.ChatCompletionMessage) (string, error) {
 
 	chats = append(initialPrompt, chats...)
 
+	var model string
+	if os.Getenv("ENV") == "production" {
+		model = openai.GPT4
+	} else {
+		model = openai.GPT3Dot5Turbo
+	}
+
+	println("Using model: ", model)
+
 	client := openai.NewClient(token)
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:    openai.GPT3Dot5Turbo,
+			Model:    model,
 			Messages: chats,
 		},
 	)
