@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -38,5 +39,5 @@ func GetResponse(chats []openai.ChatCompletionMessage) (string, error) {
 		return "", err
 	}
 
-	return resp.Choices[0].Message.Content, nil
+	return strings.ReplaceAll(string(resp.Choices[0].Message.Content), "\n", " "), nil
 }

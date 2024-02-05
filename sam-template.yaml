@@ -1,16 +1,24 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: This Lambda function serves an AI agent that answers questions about Andrew Wichmann's Resume
+Parameters:
+  OPENAI_API_TOKEN:
+    Type: String
+    Description: "OpenAI API Token"
+    Default: ""
+
 Resources:
   MyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: cmd/api/
+      Handler: cmd/api
       Runtime: go1.x
       CodeUri: .
+      Timeout: 30
       Environment:
         Variables:
           SERVER_MODE: "LAMBDA"
+          OPENAI_API_TOKEN: !Ref OPENAI_API_TOKEN
       Events:
         AIResume:
           Type: Api

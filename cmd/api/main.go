@@ -19,6 +19,7 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&messages)
 	if err != nil {
+		println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
@@ -26,6 +27,7 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 
 	chatResponse, err := chat.GetResponse(messages)
 	if err != nil {
+		println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
