@@ -8,3 +8,9 @@ serve: build
 .PHONY: build
 build:
 	sam build -t sam-template.yaml
+
+
+.PHOHY: up
+up:
+	go build cmd/api/main.go
+	SERVER_MODE=HTTP_SERVER ./main

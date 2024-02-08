@@ -86,7 +86,7 @@ func main() {
 	println("Starting server")
 	mode, ok := os.LookupEnv("SERVER_MODE")
 	if !ok {
-		panic("SERVER_MODE not set")
+		panic("SERVER_MODE not set. Please set SERVER_MODE to HTTP_SERVER or LAMBDA.")
 	}
 
 	if mode == "HTTP_SERVER" {

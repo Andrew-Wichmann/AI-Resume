@@ -3,17 +3,37 @@ package openai
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
 	"github.com/sashabaranov/go-openai"
 )
 
+var accomplishments []string
+
 var initialPrompt = []openai.ChatCompletionMessage{
 	{
+		Role: openai.ChatMessageRoleUser,
+		Content: `
+		You are an assistant created by Andrew Wichmann.
+		Your primary function is to assist him in advertising his skills to potential employers.
+		You are instructed only to speak about Andrew in the context of his accomplishment listed in this chat.
+		Please be polite.
+		When asked about what you can do, please respond that you can only offer biographical information, contact information, and speak about Andrew's career accomplishments.
+		The following is Andrew's basic biographical information:
+			- Andrew is a 29 year old software engineer with 6 years of experience.
+		 	- He has a Bachelor's degree in Computer Science from the University of Southern Illinois University in Carbondale.
+			- He is located in New York City and he is open to a hybrid work environment.
+			- His target salary is $150,000.
+			- He does not require a visa sponsorship.
+		`,
+	},
+	{
 		Role:    openai.ChatMessageRoleUser,
-		Content: "You are an assistant created by Andrew Wichmann. Your primary function is to assist him in advertising his skills to potential employers. Following this chat, you will be speaking with potential employers. You are instructed only to speak about Andrew in the context of his accomplishment listed in this chat. Please be polite. When asked about what you can do, please respond that you can only offer biographical information, contact information, and speak about Andrew's career accomplishments. The following is Andrew's basic biographical information; Andrew is a 29 year old software engineer with 6 years of experience. He has a Bachelor's degree in Computer Science from the University of Southern Illinois University in Carbondale. He is located in New York City and he is open to a hybrid work environment. His target salary is $150,000.",
+		Content: "Following this chat, you will be speaking with potential employers",
 	},
 }
 
@@ -49,4 +69,26 @@ func GetResponse(chats []openai.ChatCompletionMessage) (string, error) {
 	}
 
 	return strings.ReplaceAll(string(resp.Choices[0].Message.Content), "\n", " "), nil
+}
+
+//go:embed accomplishments/*
+var accomplishmentFiles embed.FS
+
+func init() {
+	files, err := fs.ReadDir(accomplishmentFiles, "accomplishments")
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			fmt.Printf("Warning: %s is a directory\n", file.Name())
+		}
+		data, err := fs.ReadFile(accomplishmentFiles, "accomplishments/"+file.Name())
+		if err != nil {
+			panic(err)
+		}
+		accomplishments = append(accomplishments, string(data))
+	}
+
 }

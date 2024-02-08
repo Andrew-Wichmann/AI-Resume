@@ -1,3 +1,4 @@
 main
 .env
 .aws-sam
+**__debug_bin**
