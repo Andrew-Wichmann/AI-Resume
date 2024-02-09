@@ -16,28 +16,59 @@
 
 <body>
     <div class="center">
+        <div id="chatHistory"></div>
         <input type="text" id="message" placeholder="Type your message here">
         <button onclick="sendMessage()">Send</button>
     </div>
 
     <script>
+        sessionStorage.setItem('chatHistory', JSON.stringify([]));
+        function addChatMessage(chatMessage) {
+            var chatHistory = JSON.parse(sessionStorage.getItem('chatHistory'));
+            chatHistory.push(chatMessage);
+            sessionStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            console.log('Chat history: ' + JSON.stringify(chatHistory));
+            updateUI();
+        }
+        function updateUI() {
+            var chatHistory = JSON.parse(sessionStorage.getItem('chatHistory'));
+            var chatHistoryDiv = document.getElementById('chatHistory');
+            chatHistoryDiv.innerHTML = chatHistory.map(function (chatMessage) {
+                return chatMessage.role + ': ' + chatMessage.content;
+            }).join('<br><br>');
+        }
         function sendMessage() {
             var message = document.getElementById('message').value;
-            console.log('Sending message: ' + message);
+            addChatMessage({ "role": "user", "content": message });
 
             fetch('/resume', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify([{ "role": "user", "content": message }]),
+                body: JSON.stringify([{ "role": "user", "content": JSON.stringify(sessionStorage.getItem('chatHistory')) }]),
             })
                 .then(response => response.text())
-                .then(data => console.log(data))
+                .then(data => addChatMessage(JSON.parse(data)))
                 .catch((error) => {
                     console.error('Error:', error);
                 });
         }
+        function init() {
+            fetch('/resume', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify([{ "role": "user", "content": "Please introduce yourself as the assistant and very briefly what I can learn from you." }]),
+            })
+                .then(response => response.text())
+                .then(data => addChatMessage(JSON.parse(data)))
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+        init();
     </script>
 </body>
 

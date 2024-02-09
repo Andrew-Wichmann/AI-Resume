@@ -14,7 +14,7 @@ import (
 )
 
 func resumeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "application/json")
 
 	var messages []openai.ChatCompletionMessage
 
@@ -33,8 +33,14 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
+	jsonData, err := json.Marshal(chatResponse)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(chatResponse))
+	w.Write(jsonData)
 }
 
 func lambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -73,9 +79,16 @@ func lambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 		}, nil
 	}
 
+	jsonData, err := json.Marshal(chatResponse)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, nil
+	}
 	return events.APIGatewayProxyResponse{
 		StatusCode: http.StatusOK,
-		Body:       chatResponse,
+		Body:       string(jsonData),
 	}, nil
 }
 

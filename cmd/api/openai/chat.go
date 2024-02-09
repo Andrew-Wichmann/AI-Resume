@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"strings"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -24,15 +23,17 @@ The following is Andrew's basic biographical information:
 	- Andrew is a 29 year old software engineer with 6 years of experience.
 	- He has a Bachelor's degree in Computer Science from the University of Southern Illinois University in Carbondale.
 	- He is located in New York City and he is open to a hybrid work environment.
-	- His target salary is $150,000.
+	- His target salary is $175,000.
 	- He does not require a visa sponsorship.
 	- He is available to start immediately.
+	- His email is AndrewP.Wichmann@gmail.com
+	- His phone number is 312-221-8156
 Following this chat will be a sequence of career accomplishments and initatives that Andrew has worked on.
 You are instructed to inform potential employers that you know this information and that you can speak about it.
 You will be informed when the sequence is complete when you are informed that you will be speaking with potential employers.
 `
 
-func GetResponse(chats []openai.ChatCompletionMessage) (string, error) {
+func GetResponse(chats []openai.ChatCompletionMessage) (openai.ChatCompletionMessage, error) {
 	token, set := os.LookupEnv("OPENAI_API_TOKEN")
 	if !set {
 		panic("Token not provided")
@@ -53,7 +54,7 @@ func GetResponse(chats []openai.ChatCompletionMessage) (string, error) {
 	}
 	primeDirectives[len(primeDirectives)-1] = openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
-		Content: "Following this chat, you will be speaking with potential employers",
+		Content: "Following this chat, you will be speaking with potential employers.",
 	}
 
 	chats = append(primeDirectives, chats...)
@@ -78,10 +79,12 @@ func GetResponse(chats []openai.ChatCompletionMessage) (string, error) {
 
 	if err != nil {
 		fmt.Printf("ChatCompletion error: %v\n", err)
-		return "", err
+		return openai.ChatCompletionMessage{}, err
 	}
 
-	return strings.ReplaceAll(string(resp.Choices[0].Message.Content), "\n", " "), nil
+	// I'm not sure why Choices is a slice, but I'm assuming it's because the AI can provide multiple responses.
+	// I only want one response
+	return resp.Choices[0].Message, nil
 }
 
 //go:embed accomplishments/*
