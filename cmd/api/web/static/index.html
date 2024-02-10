@@ -17,12 +17,17 @@
 <body>
     <div class="center">
         <div id="chatHistory"></div>
-        <input type="text" id="message" placeholder="Type your message here">
-        <button onclick="sendMessage()">Send</button>
+        <form id="messageForm">
+            <input type="text" id="message" placeholder="Aa" autocomplete="off">
+        </form>
     </div>
 
     <script>
         sessionStorage.setItem('chatHistory', JSON.stringify([]));
+        document.getElementById('messageForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            sendMessage();
+        });
         function addChatMessage(chatMessage) {
             var chatHistory = JSON.parse(sessionStorage.getItem('chatHistory'));
             chatHistory.push(chatMessage);
@@ -53,6 +58,8 @@
                 .catch((error) => {
                     console.error('Error:', error);
                 });
+
+            document.getElementById('message').value = '';
         }
         function init() {
             fetch('/resume', {
