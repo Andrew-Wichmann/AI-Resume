@@ -3,9 +3,14 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
+	"time"
+
+	"io/fs"
 
 	chat "github.com/Andrew-Wichmann/AI-Resume/cmd/api/openai"
 	"github.com/aws/aws-lambda-go/events"
@@ -41,6 +46,20 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
+
+	file, err := json.MarshalIndent(messages, "", " ")
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	fileName := fmt.Sprintf("/tmp/chats/chat-%d.json", rand.Intn(10000000))
+	err = os.WriteFile(fileName, file, fs.FileMode(0644))
+	if err != nil {
+		println(err.Error())
+		return
+	}
 }
 
 func lambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -94,6 +113,15 @@ func lambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 
 //go:embed web/static/index.html
 var webPage embed.FS
+
+func init() {
+	if _, err := os.Stat("/tmp/chats"); os.IsNotExist(err) {
+		err := os.Mkdir("/tmp/chats", fs.FileMode(0755))
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 
 func main() {
 	println("Starting server")
