@@ -11,71 +11,90 @@
             transform: translate(-50%, -50%);
             text-align: center;
         }
+
+        #loadingBubble {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px;
+            background: #f4f4f4;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
     </style>
 </head>
 
 <body>
     <div class="center">
         <div id="chatHistory"></div>
+        <div id="loadingBubble" style="display: none;">Loading...</div>
         <form id="messageForm">
             <input type="text" id="message" placeholder="Aa" autocomplete="off">
         </form>
     </div>
 
     <script>
-        sessionStorage.setItem('chatHistory', JSON.stringify([]));
+        var chatHistory = {
+            get: function () {
+                return JSON.parse(sessionStorage.getItem('chatHistory'));
+            },
+            push: function (chatMessage) {
+                var history = this.get();
+                history.push(chatMessage);
+                sessionStorage.setItem('chatHistory', JSON.stringify(history));
+            },
+            init: function () {
+                sessionStorage.setItem('chatHistory', JSON.stringify([]));
+                window.addEventListener('beforeunload', function () {
+                    sessionStorage.removeItem('chatHistory');
+                });
+            },
+        }
+        chatHistory.init();
+
         document.getElementById('messageForm').addEventListener('submit', function (event) {
             event.preventDefault();
             sendMessage();
         });
         function addChatMessage(chatMessage) {
-            var chatHistory = JSON.parse(sessionStorage.getItem('chatHistory'));
             chatHistory.push(chatMessage);
-            sessionStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-            console.log('Chat history: ' + JSON.stringify(chatHistory));
             updateUI();
         }
         function updateUI() {
-            var chatHistory = JSON.parse(sessionStorage.getItem('chatHistory'));
             var chatHistoryDiv = document.getElementById('chatHistory');
-            chatHistoryDiv.innerHTML = chatHistory.map(function (chatMessage) {
+            chatHistoryDiv.innerHTML = chatHistory.get().map(function (chatMessage) {
                 return chatMessage.role + ': ' + chatMessage.content;
             }).join('<br><br>');
+        }
+        function submit(chat) {
+            document.getElementById('loadingBubble').style.display = 'block';
+            fetch('/resume', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chat),
+            })
+                .then(response => response.text())
+                .then(data => {
+                    addChatMessage(JSON.parse(data));
+                    document.getElementById('loadingBubble').style.display = 'none';
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    document.getElementById('loadingBubble').style.display = 'none';
+                });
         }
         function sendMessage() {
             var message = document.getElementById('message').value;
             addChatMessage({ "role": "user", "content": message });
 
-            fetch('/resume', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify([{ "role": "user", "content": JSON.stringify(sessionStorage.getItem('chatHistory')) }]),
-            })
-                .then(response => response.text())
-                .then(data => addChatMessage(JSON.parse(data)))
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
+            submit(chatHistory.get())
 
             document.getElementById('message').value = '';
         }
-        function init() {
-            fetch('/resume', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify([{ "role": "user", "content": "Please introduce yourself as the assistant and very briefly what I can learn from you." }]),
-            })
-                .then(response => response.text())
-                .then(data => addChatMessage(JSON.parse(data)))
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-        }
-        init();
+        submit([{ "role": "user", "content": "Please introduce yourself as the assistant and very briefly what I can learn from you." }])
+
     </script>
 </body>
 
