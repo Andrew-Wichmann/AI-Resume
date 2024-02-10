@@ -59,10 +59,8 @@ func GetResponse(chats []openai.ChatCompletionMessage) (openai.ChatCompletionMes
 
 	chats = append(primeDirectives, chats...)
 
-	var model string
-	if os.Getenv("ENV") == "production" {
-		model = openai.GPT4
-	} else {
+	model, set := os.LookupEnv("OPENAI_MODEL")
+	if !set {
 		model = openai.GPT3Dot5Turbo
 	}
 
