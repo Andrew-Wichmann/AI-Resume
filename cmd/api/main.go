@@ -47,6 +47,8 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 
+	messages = append(messages, chatResponse)
+
 	file, err := json.MarshalIndent(messages, "", " ")
 	if err != nil {
 		println(err.Error())
