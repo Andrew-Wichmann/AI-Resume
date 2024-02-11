@@ -134,7 +134,10 @@ func main() {
 
 	if mode == "HTTP_SERVER" {
 		http.Handle("/", http.FileServer(http.FS(webPage)))
+
+		// I've sent links around with /web/static/ in them, so I need to redirect them to the correct location
 		http.Handle("/web/static/", http.RedirectHandler("/", http.StatusMovedPermanently))
+
 		http.HandleFunc("/resume", resumeHandler)
 		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
