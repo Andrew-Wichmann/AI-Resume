@@ -113,7 +113,7 @@ func lambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	}, nil
 }
 
-//go:embed web/static/index.html
+//go:embed index.html
 var webPage embed.FS
 
 func init() {
@@ -134,6 +134,7 @@ func main() {
 
 	if mode == "HTTP_SERVER" {
 		http.Handle("/", http.FileServer(http.FS(webPage)))
+		http.Handle("/web/static/", http.RedirectHandler("/", http.StatusMovedPermanently))
 		http.HandleFunc("/resume", resumeHandler)
 		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
